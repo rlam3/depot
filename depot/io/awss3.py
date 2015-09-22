@@ -164,7 +164,6 @@ class S3Storage(FileStorage):
 def _check_file_id(unstriped_file_id):
     # Check that the given file id is valid, this also
     # prevents unsafe paths.
-    # import pdb; pdb.set_trace()
     file_id = unstriped_file_id.split('/')[-1]
     try:
         uuid.UUID('{%s}' % file_id)

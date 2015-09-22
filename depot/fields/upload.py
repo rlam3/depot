@@ -39,19 +39,13 @@ class UploadedFile(DepotFileInfo):
         self['file_id'] = file_id
         self['path'] = file_path
 
-        # import pdb; pdb.set_trace()
         saved_file = self.file
         self['filename'] = saved_file.filename
         self['content_type'] = saved_file.content_type
         self['uploaded_at'] = saved_file.last_modified.strftime('%Y-%m-%d %H:%M:%S')
         self['_public_url'] = saved_file.public_url
-        # self['upload_directory'] = saved_file.
 
     def store_content(self, content, filename=None, content_type=None):
-        print "Store content"
-        # print upload_directory
-        # Add folder name
-        # import pdb; pdb.set_trace()
         upload_directory = self.upload_directory
         file_id = self.depot.create(content, filename, content_type, upload_directory)
         file_path = '%s/%s' % (self.depot_name, file_id)
