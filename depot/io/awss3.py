@@ -122,14 +122,16 @@ class S3Storage(FileStorage):
             key.set_contents_from_string(content, policy=self._policy,
                                          encrypt_key=self._encrypt_key)
 
-    def create(self, content, filename=None, content_type=None):
+    def create(self, content, filename=None, content_type=None, upload_directory=None):
         content, filename, content_type = self.fileinfo(content, filename, content_type)
         new_file_id = str(uuid.uuid1())
-        key = self._bucket.new_key(new_file_id)
-        self.__save_file(key, content, filename, content_type)
-        return new_file_id
 
-    def replace(self, file_or_id, content, filename=None, content_type=None):
+        new_file_key = "/".join([upload_directory,new_file_id])
+        key = self._bucket.new_key(new_file_key)
+        self.__save_file(key, content, filename, content_type)
+        return new_file_key
+
+    def replace(self, file_or_id, content, filename=None, content_type=None, upload_directory=None):
         fileid = self.fileid(file_or_id)
         _check_file_id(fileid)
 
@@ -159,9 +161,11 @@ class S3Storage(FileStorage):
         return k is not None
 
 
-def _check_file_id(file_id):
+def _check_file_id(unstriped_file_id):
     # Check that the given file id is valid, this also
     # prevents unsafe paths.
+    # import pdb; pdb.set_trace()
+    file_id = unstriped_file_id.split('/')[-1]
     try:
         uuid.UUID('{%s}' % file_id)
     except:
