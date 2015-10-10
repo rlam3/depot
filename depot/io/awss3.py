@@ -1,7 +1,7 @@
 """
-Provides FileStorage implementation for Amazon S3.
+Provides FileStorage implementation for MongoDB GridFS.
 
-This is useful for storing files in S3.
+This is useful for storing files inside a mongodb database.
 
 """
 from __future__ import absolute_import
@@ -123,16 +123,17 @@ class S3Storage(FileStorage):
             key.set_contents_from_string(content, policy=self._policy,
                                          encrypt_key=self._encrypt_key)
 
-    def create(self, content, filename=None, content_type=None, upload_directory=None):
+    def create(self, content, filename=None, content_type=None):
         content, filename, content_type = self.fileinfo(content, filename, content_type)
         new_file_id = str(uuid.uuid1())
+        import pdb; pdb.set_trace()
 
-        new_file_key = "/".join([upload_directory,new_file_id])
+        new_file_key = "/".join([self.upload_directory,new_file_id])
         key = self._bucket.new_key(new_file_key)
         self.__save_file(key, content, filename, content_type)
         return new_file_key
 
-    def replace(self, file_or_id, content, filename=None, content_type=None, upload_directory=None):
+    def replace(self, file_or_id, content, filename=None, content_type=None):
         fileid = self.fileid(file_or_id)
         _check_file_id(fileid)
 
@@ -161,13 +162,11 @@ class S3Storage(FileStorage):
         k = self._bucket.get_key(fileid)
         return k is not None
 
-    def list(self):
-        return [key.name for key in self._bucket.list()]
-
 
 def _check_file_id(unstriped_file_id):
     # Check that the given file id is valid, this also
     # prevents unsafe paths.
+    # import pdb; pdb.set_trace()
     file_id = unstriped_file_id.split('/')[-1]
     try:
         uuid.UUID('{%s}' % file_id)

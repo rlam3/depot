@@ -31,7 +31,7 @@ class DepotFileInfo(with_metaclass(ABCMeta, dict)):
     systems.
 
     """
-    def __init__(self, content, depot_name=None, upload_directory=None):
+    def __init__(self, content, depot_name=None):
         super(DepotFileInfo, self).__init__()
         self._thaw()
 
@@ -49,13 +49,12 @@ class DepotFileInfo(with_metaclass(ABCMeta, dict)):
 
             self['depot_name'] = depot_name
             self['files'] = []
-            self['upload_directory'] = upload_directory
             self.process_content(content)
 
         self._freeze()
 
     @abstractmethod
-    def process_content(self, content, filename=None, content_type=None, upload_directory=None):  # pragma: no cover
+    def process_content(self, content, filename=None, content_type=None):  # pragma: no cover
         """Process content in the given depot.
 
         This is implemented by subclasses to provide some kind of behaviour on the

@@ -14,12 +14,12 @@ from .upload import UploadedFile
 
 
 class UploadedFileField(types.TypeDecorator):
-    """Provides support for storing attachments to **SQLAlchemy** models.
+    """Provides support for storing attachments to SQLAlchemy models.
 
     ``UploadedFileField`` can be used as a Column type to store files
-    into the model. The actual file itself will be uploaded to the
-    default Storage, and only the :class:`depot.fields.upload.UploadedFile`
-    information will be stored on the database.
+    into the model. The actuall file itself will be uploaded to the
+    default Depot, and only the :class:`depot.fields.upload.UploadedFile`
+    informations will be stored on the database.
 
     The ``UploadedFileField`` is transaction aware, so it will delete
     every uploaded file whenever the transaction is rolled back and will
@@ -33,12 +33,11 @@ class UploadedFileField(types.TypeDecorator):
     """
     impl = types.Unicode
 
-    def __init__(self, filters=tuple(), upload_type=UploadedFile, upload_storage=None, upload_directory=None, *args, **kw):
+    def __init__(self, filters=tuple(), upload_type=UploadedFile, upload_storage=None, *args, **kw):
         super(UploadedFileField, self).__init__(*args, **kw)
         self._filters = filters
         self._upload_type = upload_type
         self._upload_storage = upload_storage
-        self._upload_directory = upload_directory
 
     def load_dialect_impl(self, dialect):
         return dialect.type_descriptor(types.VARCHAR(4096))
@@ -71,7 +70,7 @@ class _SQLAMutationTracker(object):
         column_type = set_property.columns[0].type
         assert(isinstance(column_type, UploadedFileField))
         upload_type = column_type._upload_type
-        value = upload_type(value, column_type._upload_storage, column_type._upload_directory)
+        value = upload_type(value, column_type._upload_storage)
         value._apply_filters(column_type._filters)
 
         return value
