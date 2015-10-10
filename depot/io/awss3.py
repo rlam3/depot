@@ -68,12 +68,13 @@ class S3Storage(FileStorage):
     """
 
     def __init__(self, access_key_id, secret_access_key, bucket=None, host=None,
-                 policy=None, encrypt_key=False):
+                 policy=None, encrypt_key=False,upload_directory=None):
         policy = policy or CANNED_ACL_PUBLIC_READ
         assert policy in [CANNED_ACL_PUBLIC_READ, CANNED_ACL_PRIVATE], (
             "Key policy must be %s or %s" % (CANNED_ACL_PUBLIC_READ, CANNED_ACL_PRIVATE))
         self._policy = policy or CANNED_ACL_PUBLIC_READ
         self._encrypt_key = encrypt_key
+        self.upload_directory = upload_directory or ''
 
         if bucket is None:
             bucket = 'filedepot-%s' % (access_key_id.lower(),)
