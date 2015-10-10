@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import os, sys
 
-version = '0.1.1'
+version = '0.2.0'
 
 here = os.path.abspath(os.path.dirname(__file__))
 try:
@@ -19,7 +19,10 @@ TEST_DEPENDENCIES = ['mock',
 
 py_version = sys.version_info[:2]
 if py_version != (3, 2):
-    TEST_DEPENDENCIES += ['boto']
+    TEST_DEPENDENCIES += ['boto', 'coverage']
+else:
+    TEST_DEPENDENCIES += ['coverage < 4.0']
+
 
 INSTALL_DEPENDENCIES = ['unidecode']
 if py_version == (2, 6):

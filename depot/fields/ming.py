@@ -15,49 +15,78 @@ class _UploadedFileSchema(Anything):
 
 
 class UploadedFileProperty(FieldProperty):
-        def __init__(self,  filters=tuple(), upload_type=UploadedFile, upload_storage=None):
-            FieldProperty.__init__(self, _UploadedFileSchema())
-            self._filters = filters
-            self._upload_type = upload_type
-            self._upload_storage = upload_storage
+    """Provides support for storing attachments to **Ming** MongoDB models.
 
-        def __set__(self, instance, value):
-            if value is not None and not isinstance(value, UploadedFile):
-                upload_type = self._upload_type
-                value = upload_type(value, self._upload_storage)
+    ``UploadedFileProperty`` can be used as a field type to store files
+    into the model. The actual file itself will be uploaded to the
+    default Storage, and only the :class:`depot.fields.upload.UploadedFile`
+    information will be stored on the database.
 
-            if isinstance(value, UploadedFile):
-                value._apply_filters(self._filters)
+    The ``UploadedFileProperty`` is UnitOfWork aware, so it will delete
+    every uploaded file whenever unit of work is flushed and deletes a Document
+    that stored files or changes the field of a document storing files. This is
+    the reason you should never associate the same :class:`depot.fields.upload.UploadedFile`
+    to two different ``UploadedFileProperty``, otherwise you might delete a file
+    already used by another document. It is usually best to just set the ``file``
+    or ``bytes`` as content of the column and let the ``UploadedFileProperty``
+    create the :class:`depot.fields.upload.UploadedFile` by itself whenever it's content is set.
 
-            old_value = self.__get__(instance, instance.__class__)
-            DepotExtension.get_depot_history(instance).swap(old_value, value)
-            return FieldProperty.__set__(self, instance, value)
+    .. warning::
 
-        def __get__(self, instance, owner=None):
-            try:
-                value = FieldProperty.__get__(self, instance, owner)
-            except AttributeError:
-                value = None
+        As the Ming UnitOfWork does not notify any event in case it gets cleared instead
+        of being flushed all the files uploaded before clearing the unit of work will be
+        already uploaded but won't have a document referencing them anymore, so DEPOT will
+        be unable to delete them for you.
 
-            if not value:
-                return None
+    """
+    def __init__(self,  filters=tuple(), upload_type=UploadedFile, upload_storage=None):
+        FieldProperty.__init__(self, _UploadedFileSchema())
+        self._filters = filters
+        self._upload_type = upload_type
+        self._upload_storage = upload_storage
 
-            if instance is None:
-                return value
+    def __set__(self, instance, value):
+        if value is not None and not isinstance(value, UploadedFile):
+            upload_type = self._upload_type
+            value = upload_type(value, self._upload_storage)
 
-            return self._upload_type(value)
+        if isinstance(value, UploadedFile):
+            value._apply_filters(self._filters)
 
+        old_value = self.__get__(instance, instance.__class__)
+        DepotExtension.get_depot_history(instance).swap(old_value, value)
+        return FieldProperty.__set__(self, instance, value)
 
-        """
-        # Looks like this should do nothing on ming.
-        def __delete__(self, instance, owner=None):
-            old_value = self.__get__(instance, instance.__class__)
-            DepotExtension.get_depot_history(instance).delete(old_value)
-            return FieldProperty.__delete__(self, instance, owner)
-        """
+    def __get__(self, instance, owner=None):
+        try:
+            value = FieldProperty.__get__(self, instance, owner)
+        except AttributeError:
+            value = None
+
+        if not value:
+            return None
+
+        if instance is None:
+            return value
+
+        return self._upload_type(value)
+
+    """
+    # Looks like this should do nothing on ming.
+    def __delete__(self, instance, owner=None):
+        old_value = self.__get__(instance, instance.__class__)
+        DepotExtension.get_depot_history(instance).delete(old_value)
+        return FieldProperty.__delete__(self, instance, owner)
+    """
 
 
 class DepotExtension(SessionExtension):
+    """Extends the Ming Session to track files.
+
+    Deletes old files when an entry gets removed or replaced,
+    apply this as a Ming ``SessionExtension`` according to Ming
+    documentation.
+    """
     @classmethod
     def get_depot_history(cls, instance):
         istate = state(instance)

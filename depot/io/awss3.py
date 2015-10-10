@@ -1,7 +1,7 @@
 """
-Provides FileStorage implementation for MongoDB GridFS.
+Provides FileStorage implementation for Amazon S3.
 
-This is useful for storing files inside a mongodb database.
+This is useful for storing files in S3.
 
 """
 from __future__ import absolute_import
@@ -159,6 +159,9 @@ class S3Storage(FileStorage):
 
         k = self._bucket.get_key(fileid)
         return k is not None
+
+    def list(self):
+        return [key.name for key in self._bucket.list()]
 
 
 def _check_file_id(unstriped_file_id):

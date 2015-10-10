@@ -26,6 +26,9 @@ Database Support
 .. autoclass:: depot.fields.ming.UploadedFileProperty
     :members:
 
+.. autoclass:: depot.fields.ming.DepotExtension
+    :members:
+
 .. autoclass:: depot.fields.interfaces.DepotFileInfo
     :members:
 
@@ -34,6 +37,20 @@ Database Support
 
 .. autoclass:: depot.fields.upload.UploadedFile
     :members:
+
+Filters
+~~~~~~~
+
+.. module:: depot.fields.filters
+
+.. autoclass:: depot.fields.filters.thumbnails.WithThumbnailFilter
+
+Specialized FileTypes
+~~~~~~~~~~~~~~~~~~~~~
+
+.. module:: depot.fields.specialized
+
+.. autoclass:: depot.fields.specialized.image.UploadedImageWithThumb
 
 
 Storing Files
