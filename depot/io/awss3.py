@@ -68,7 +68,7 @@ class S3Storage(FileStorage):
     """
 
     def __init__(self, access_key_id, secret_access_key, bucket=None, host=None,
-                 policy=None, encrypt_key=False,upload_directory=None):
+                 policy=None, encrypt_key=False, upload_directory=None):
         policy = policy or CANNED_ACL_PUBLIC_READ
         assert policy in [CANNED_ACL_PUBLIC_READ, CANNED_ACL_PRIVATE], (
             "Key policy must be %s or %s" % (CANNED_ACL_PUBLIC_READ, CANNED_ACL_PRIVATE))
@@ -126,12 +126,9 @@ class S3Storage(FileStorage):
     def create(self, content, filename=None, content_type=None):
         content, filename, content_type = self.fileinfo(content, filename, content_type)
         new_file_id = str(uuid.uuid1())
-        import pdb; pdb.set_trace()
-
-        new_file_key = "/".join([self.upload_directory,new_file_id])
-        key = self._bucket.new_key(new_file_key)
+        key = self._bucket.new_key(new_file_id)
         self.__save_file(key, content, filename, content_type)
-        return new_file_key
+        return new_file_id
 
     def replace(self, file_or_id, content, filename=None, content_type=None):
         fileid = self.fileid(file_or_id)
@@ -162,12 +159,13 @@ class S3Storage(FileStorage):
         k = self._bucket.get_key(fileid)
         return k is not None
 
+    def list(self):
+        return [key.name for key in self._bucket.list()]
 
-def _check_file_id(unstriped_file_id):
+
+def _check_file_id(file_id):
     # Check that the given file id is valid, this also
     # prevents unsafe paths.
-    # import pdb; pdb.set_trace()
-    file_id = unstriped_file_id.split('/')[-1]
     try:
         uuid.UUID('{%s}' % file_id)
     except:

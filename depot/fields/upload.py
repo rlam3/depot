@@ -33,13 +33,11 @@ class UploadedFile(DepotFileInfo):
         Subclasses will need to call this method to ensure the standard
         set of attributes is provided.
         """
-        print "Process content"
 
         file_path, file_id = self.store_content(content, filename, content_type)
         self['file_id'] = file_id
         self['path'] = file_path
 
-        # import pdb; pdb.set_trace()
         saved_file = self.file
         self['filename'] = saved_file.filename
         self['content_type'] = saved_file.content_type
@@ -47,8 +45,6 @@ class UploadedFile(DepotFileInfo):
         self['_public_url'] = saved_file.public_url
 
     def store_content(self, content, filename=None, content_type=None):
-        print "Store content"
-        # Add folder name
         file_id = self.depot.create(content, filename, content_type)
         file_path = '%s/%s' % (self.depot_name, file_id)
         self.files.append(file_path)
